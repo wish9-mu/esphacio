@@ -1,0 +1,6 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {listings,costs,filterListings,validateInquiry} from '../lib/domain.ts';
+test('cost estimate separates refundable deposit and includes dues',()=>{assert.deepEqual(costs(listings[0],2),{recurring:23500,rentTotal:47000,nonRefundable:48000,deposit:22000,total:70000});});
+test('filters search neighborhoods and use rent plus dues for budget',()=>{assert.equal(filterListings('salcedo','All stays')[0].id,'makati-nest');assert.equal(filterListings('','Under ₱25k').length,2);assert.equal(filterListings('','Short-term').length,2);assert.equal(filterListings('','Saved',['bgc-studio']).length,1);});
+test('inquiry rejects tampered listing, missing consent and invalid stay',()=>{const valid={listingId:'bgc-studio',name:'Demo Guest',email:'guest@example.com',message:'A fictional inquiry for testing.',consent:true,moveIn:'2099-01-01',months:1};assert.equal(validateInquiry(valid),null);assert.ok(validateInquiry({...valid,listingId:'unknown'}));assert.ok(validateInquiry({...valid,consent:false}));assert.ok(validateInquiry({...valid,listingId:'makati-nest',months:1}));assert.ok(validateInquiry({...valid,months:1.5}));assert.ok(validateInquiry({...valid,moveIn:'2020-01-01'}));assert.ok(validateInquiry({...valid,moveIn:'2099-02-31'}));});
